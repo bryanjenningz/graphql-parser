@@ -1,40 +1,40 @@
-module Main exposing (Field(..), fields)
+module Main exposing (Query(..), query)
 
 import Parser exposing ((|.), (|=), Parser, Step(..))
 
 
-type Field
-    = Field String (List Field)
+type Query
+    = Query String (List Query)
 
 
-fields : Parser (List Field)
-fields =
+query : Parser (List Query)
+query =
     Parser.succeed identity
         |. Parser.token "{"
         |. Parser.spaces
-        |= Parser.loop [] fieldsHelp
+        |= Parser.loop [] queryHelp
 
 
-fieldsHelp : List Field -> Parser (Step (List Field) (List Field))
-fieldsHelp revFields =
+queryHelp : List Query -> Parser (Step (List Query) (List Query))
+queryHelp revQueries =
     Parser.oneOf
         [ Parser.succeed ()
             |. Parser.spaces
             |. Parser.token "}"
             |. Parser.spaces
-            |> Parser.map (\_ -> Done (List.reverse revFields))
-        , Parser.succeed (\name fieldList -> Loop (Field name fieldList :: revFields))
+            |> Parser.map (\_ -> Done (List.reverse revQueries))
+        , Parser.succeed (\name queryList -> Loop (Query name queryList :: revQueries))
             |. Parser.spaces
-            |= chompName
+            |= alphas
             |. Parser.spaces
             |= Parser.oneOf
-                [ fields
+                [ query
                 , Parser.succeed []
                 ]
         ]
 
 
-chompName : Parser String
-chompName =
+alphas : Parser String
+alphas =
     Parser.chompWhile Char.isAlpha
         |> Parser.getChompedString

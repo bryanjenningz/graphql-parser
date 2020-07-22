@@ -1,7 +1,7 @@
 module TestMain exposing (suite)
 
 import Expect
-import Main exposing (Field(..), fields)
+import Main exposing (Query(..), query)
 import Parser
 import Test exposing (Test)
 
@@ -10,15 +10,15 @@ suite : Test
 suite =
     Test.describe "GraphQL parsers"
         [ Test.describe "Query parser"
-            [ Test.test "Parses a simple query field" <|
+            [ Test.test "Parses a simple query" <|
                 \_ ->
                     Expect.equal
-                        (Parser.run fields "{ name }")
-                        (Ok [ Field "name" [] ])
-            , Test.test "Parser nested fields" <|
+                        (Parser.run query "{ name }")
+                        (Ok [ Query "name" [] ])
+            , Test.test "Parser nested query" <|
                 \_ ->
                     Expect.equal
-                        (Parser.run fields
+                        (Parser.run query
                             """{
                             hero {
                                 name
@@ -41,19 +41,19 @@ suite =
                         """
                         )
                         (Ok
-                            [ Field "hero"
-                                [ Field "name" []
-                                , Field "friends"
-                                    [ Field "name" []
-                                    , Field "homeWorld"
-                                        [ Field "name" []
-                                        , Field "climate" []
+                            [ Query "hero"
+                                [ Query "name" []
+                                , Query "friends"
+                                    [ Query "name" []
+                                    , Query "homeWorld"
+                                        [ Query "name" []
+                                        , Query "climate" []
                                         ]
-                                    , Field "species"
-                                        [ Field "name" []
-                                        , Field "lifespan" []
-                                        , Field "origin"
-                                            [ Field "name" [] ]
+                                    , Query "species"
+                                        [ Query "name" []
+                                        , Query "lifespan" []
+                                        , Query "origin"
+                                            [ Query "name" [] ]
                                         ]
                                     ]
                                 ]
