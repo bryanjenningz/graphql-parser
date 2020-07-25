@@ -1,7 +1,8 @@
 module TestMain exposing (suite)
 
+import Dict
 import Expect
-import Main exposing (Query(..), query)
+import Main exposing (Query(..), Typedef(..), query, typedef)
 import Parser
 import Test exposing (Test)
 
@@ -58,6 +59,22 @@ suite =
                                     ]
                                 ]
                             ]
+                        )
+            ]
+        , Test.describe "Typedef parser"
+            [ Test.test "Parses a simple typedef" <|
+                \_ ->
+                    Expect.equal
+                        (Parser.run typedef "type Query { hero: String }")
+                        (Ok <|
+                            Dict.fromList
+                                [ ( "Query"
+                                  , ObjectType
+                                        (Dict.fromList
+                                            [ ( "hero", StringType ) ]
+                                        )
+                                  )
+                                ]
                         )
             ]
         ]

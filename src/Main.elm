@@ -1,5 +1,6 @@
-module Main exposing (Query(..), query)
+module Main exposing (Query(..), Typedef(..), query, typedef)
 
+import Dict exposing (Dict)
 import Parser exposing ((|.), (|=), Parser, Step(..))
 
 
@@ -38,3 +39,30 @@ alphas : Parser String
 alphas =
     Parser.chompWhile Char.isAlpha
         |> Parser.getChompedString
+
+
+type Typedef
+    = StringType
+    | ObjectType (Dict String Typedef)
+
+
+typedef : Parser (Dict String Typedef)
+typedef =
+    Parser.succeed (\key val -> Dict.fromList [ ( key, val ) ])
+        |. Parser.keyword "type"
+        |. Parser.spaces
+        |= alphas
+        |. Parser.spaces
+        |= Parser.oneOf
+            [ Parser.keyword "String"
+                |> Parser.map (\_ -> StringType)
+            , Parser.succeed (\key -> ObjectType (Dict.fromList [ ( key, StringType ) ]))
+                |. Parser.spaces
+                |. Parser.token "{"
+                |. Parser.spaces
+                |= alphas
+                |. Parser.token ":"
+                |. Parser.spaces
+                |. alphas
+                |. Parser.spaces
+            ]
