@@ -1,4 +1,4 @@
-module Main exposing (GraphQLType(..), Query(..), query, typedef)
+module Main exposing (GraphQLType(..), Query(..), query, typedef, typedefs)
 
 import Dict exposing (Dict)
 import Parser exposing ((|.), (|=), Parser, Step(..))
@@ -48,9 +48,28 @@ type GraphQLType
     | DefinedType String
 
 
+typedefs : Parser (Dict String GraphQLType)
+typedefs =
+    Parser.loop Dict.empty loopTypedefs
+
+
+loopTypedefs : Dict String GraphQLType -> Parser (Step (Dict String GraphQLType) (Dict String GraphQLType))
+loopTypedefs keyVals =
+    Parser.oneOf
+        [ typedef
+            |. Parser.spaces
+            |> Parser.map
+                (\parsedTypedef -> Loop (Dict.union keyVals parsedTypedef))
+        , Parser.succeed ()
+            |. Parser.spaces
+            |> Parser.map (\_ -> Done keyVals)
+        ]
+
+
 typedef : Parser (Dict String GraphQLType)
 typedef =
     Parser.succeed (\key val -> Dict.fromList [ ( key, val ) ])
+        |. Parser.spaces
         |. Parser.keyword "type"
         |. Parser.spaces
         |= alphas
@@ -80,7 +99,7 @@ loopKeyVals keyVals =
             |. Parser.spaces
             |= Parser.oneOf
                 [ Parser.keyword "String" |> Parser.map (\_ -> StringType)
-                , Parser.keyword "Int" |> Parser.map (\_ -> IntType) 
+                , Parser.keyword "Int" |> Parser.map (\_ -> IntType)
                 , alphas |> Parser.map DefinedType
                 ]
             |. Parser.spaces

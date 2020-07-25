@@ -2,7 +2,7 @@ module TestMain exposing (suite)
 
 import Dict
 import Expect
-import Main exposing (GraphQLType(..), Query(..), query, typedef)
+import Main exposing (GraphQLType(..), Query(..), query, typedef, typedefs)
 import Parser
 import Test exposing (Test)
 
@@ -99,5 +99,44 @@ suite =
                                   )
                                 ]
                         )
+            , Test.describe "Typedefs parser"
+                [ Test.test "Parses multiple typedefs" <|
+                    \_ ->
+                        Expect.equal
+                            (Parser.run typedefs """
+                            type Hero {
+                                id: String
+                                name: String
+                                age: Int
+                                friend: Friend
+                            }
+                            type Friend {
+                                friendliness: Int
+                                picture: String
+                            }
+                            """)
+                            (Ok <|
+                                Dict.fromList
+                                    [ ( "Hero"
+                                      , ObjectType
+                                            (Dict.fromList
+                                                [ ( "id", StringType )
+                                                , ( "name", StringType )
+                                                , ( "age", IntType )
+                                                , ( "friend", DefinedType "Friend" )
+                                                ]
+                                            )
+                                      )
+                                    , ( "Friend"
+                                      , ObjectType
+                                            (Dict.fromList
+                                                [ ( "friendliness", IntType )
+                                                , ( "picture", StringType )
+                                                ]
+                                            )
+                                      )
+                                    ]
+                            )
+                ]
             ]
         ]
