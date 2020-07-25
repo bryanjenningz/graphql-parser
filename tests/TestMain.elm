@@ -2,7 +2,7 @@ module TestMain exposing (suite)
 
 import Dict
 import Expect
-import Main exposing (GraphQLType(..), Query(..), query, typedef, typedefs)
+import Main exposing (GraphQLType(..), Query(..), allValidTypedefs, query, typedef, typedefs)
 import Parser
 import Test exposing (Test)
 
@@ -137,6 +137,52 @@ suite =
                                       )
                                     ]
                             )
+                ]
+            , Test.describe "allValidTypedefs"
+                [ Test.test "Is valid if all typedef references are actually defined" <|
+                    \_ ->
+                        Expect.equal
+                            (allValidTypedefs <|
+                                Dict.fromList
+                                    [ ( "Hero"
+                                      , ObjectType
+                                            (Dict.fromList
+                                                [ ( "id", StringType )
+                                                , ( "name", StringType )
+                                                , ( "age", IntType )
+                                                , ( "friend", DefinedType "Friend" )
+                                                ]
+                                            )
+                                      )
+                                    , ( "Friend"
+                                      , ObjectType
+                                            (Dict.fromList
+                                                [ ( "friendliness", IntType )
+                                                , ( "picture", StringType )
+                                                ]
+                                            )
+                                      )
+                                    ]
+                            )
+                            True
+                , Test.test "Is not valid if there's a type used that's not actually defined" <|
+                    \_ ->
+                        Expect.equal
+                            (allValidTypedefs <|
+                                Dict.fromList
+                                    [ ( "Hero"
+                                      , ObjectType
+                                            (Dict.fromList
+                                                [ ( "id", StringType )
+                                                , ( "name", StringType )
+                                                , ( "age", IntType )
+                                                , ( "friend", DefinedType "Friend" )
+                                                ]
+                                            )
+                                      )
+                                    ]
+                            )
+                            False
                 ]
             ]
         ]

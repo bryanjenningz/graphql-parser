@@ -1,4 +1,4 @@
-module Main exposing (GraphQLType(..), Query(..), query, typedef, typedefs)
+module Main exposing (GraphQLType(..), Query(..), allValidTypedefs, query, typedef, typedefs)
 
 import Dict exposing (Dict)
 import Parser exposing ((|.), (|=), Parser, Step(..))
@@ -106,3 +106,29 @@ loopKeyVals keyVals =
         , Parser.succeed (\_ -> Done keyVals)
             |= Parser.token "}"
         ]
+
+
+allValidTypedefs : Dict String GraphQLType -> Bool
+allValidTypedefs graphQLTypes =
+    allValidTypedefsHelp graphQLTypes graphQLTypes
+
+
+allValidTypedefsHelp : Dict String GraphQLType -> Dict String GraphQLType -> Bool
+allValidTypedefsHelp definedTypes graphQLTypes =
+    graphQLTypes
+        |> Dict.toList
+        |> List.all
+            (\( _, val ) ->
+                case val of
+                    StringType ->
+                        True
+
+                    IntType ->
+                        True
+
+                    ObjectType keyVals ->
+                        allValidTypedefsHelp definedTypes keyVals
+
+                    DefinedType definedType ->
+                        Dict.member definedType definedTypes
+            )
