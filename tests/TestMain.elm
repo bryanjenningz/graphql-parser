@@ -2,7 +2,7 @@ module TestMain exposing (suite)
 
 import Dict
 import Expect
-import Main exposing (Query(..), GraphQLType(..), query, typedef)
+import Main exposing (GraphQLType(..), Query(..), query, typedef)
 import Parser
 import Test exposing (Test)
 
@@ -79,7 +79,12 @@ suite =
             , Test.test "Parses a typedef with multiple key vals" <|
                 \_ ->
                     Expect.equal
-                        (Parser.run typedef "type Hero { id: String name: String age: Int }")
+                        (Parser.run typedef """type Hero {
+                            id: String
+                            name: String
+                            age: Int
+                            friend: Friend
+                        }""")
                         (Ok <|
                             Dict.fromList
                                 [ ( "Hero"
@@ -87,7 +92,8 @@ suite =
                                         (Dict.fromList
                                             [ ( "id", StringType )
                                             , ( "name", StringType )
-                                            , ( "age", IntType)
+                                            , ( "age", IntType )
+                                            , ( "friend", DefinedType "Friend" )
                                             ]
                                         )
                                   )

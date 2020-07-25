@@ -45,6 +45,7 @@ type GraphQLType
     = StringType
     | IntType
     | ObjectType (Dict String GraphQLType)
+    | DefinedType String
 
 
 typedef : Parser (Dict String GraphQLType)
@@ -80,6 +81,7 @@ loopKeyVals keyVals =
             |= Parser.oneOf
                 [ Parser.keyword "String" |> Parser.map (\_ -> StringType)
                 , Parser.keyword "Int" |> Parser.map (\_ -> IntType) 
+                , alphas |> Parser.map DefinedType
                 ]
             |. Parser.spaces
         , Parser.succeed (\_ -> Done keyVals)
