@@ -76,10 +76,10 @@ suite =
                                   )
                                 ]
                         )
-            , Test.test "Parses a typedef with 2 key vals" <|
+            , Test.test "Parses a typedef with multiple key vals" <|
                 \_ ->
                     Expect.equal
-                        (Parser.run typedef "type Hero { id: String name: String }")
+                        (Parser.run typedef "type Hero { id: String name: String age: Int }")
                         (Ok <|
                             Dict.fromList
                                 [ ( "Hero"
@@ -87,6 +87,7 @@ suite =
                                         (Dict.fromList
                                             [ ( "id", StringType )
                                             , ( "name", StringType )
+                                            , ( "age", IntType)
                                             ]
                                         )
                                   )
