@@ -2,7 +2,7 @@ module TestMain exposing (suite)
 
 import Dict
 import Expect
-import Main exposing (Query(..), Typedef(..), query, typedef)
+import Main exposing (GraphQLType(..), Query(..), query, typedef)
 import Parser
 import Test exposing (Test)
 

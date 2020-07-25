@@ -1,4 +1,4 @@
-module Main exposing (Query(..), Typedef(..), query, typedef)
+module Main exposing (GraphQLType(..), Query(..), query, typedef)
 
 import Dict exposing (Dict)
 import Parser exposing ((|.), (|=), Parser, Step(..))
@@ -41,28 +41,33 @@ alphas =
         |> Parser.getChompedString
 
 
-type Typedef
+type GraphQLType
     = StringType
-    | ObjectType (Dict String Typedef)
+    | ObjectType (Dict String GraphQLType)
 
 
-typedef : Parser (Dict String Typedef)
+typedef : Parser (Dict String GraphQLType)
 typedef =
     Parser.succeed (\key val -> Dict.fromList [ ( key, val ) ])
         |. Parser.keyword "type"
         |. Parser.spaces
         |= alphas
         |. Parser.spaces
-        |= Parser.oneOf
-            [ Parser.keyword "String"
-                |> Parser.map (\_ -> StringType)
-            , Parser.succeed (\key -> ObjectType (Dict.fromList [ ( key, StringType ) ]))
-                |. Parser.spaces
-                |. Parser.token "{"
-                |. Parser.spaces
-                |= alphas
-                |. Parser.token ":"
-                |. Parser.spaces
-                |. alphas
-                |. Parser.spaces
-            ]
+        |= graphQLType
+
+
+graphQLType : Parser GraphQLType
+graphQLType =
+    Parser.oneOf
+        [ Parser.keyword "String"
+            |> Parser.map (\_ -> StringType)
+        , Parser.succeed (\key -> ObjectType (Dict.fromList [ ( key, StringType ) ]))
+            |. Parser.spaces
+            |. Parser.token "{"
+            |. Parser.spaces
+            |= alphas
+            |. Parser.token ":"
+            |. Parser.spaces
+            |. alphas
+            |. Parser.spaces
+        ]
