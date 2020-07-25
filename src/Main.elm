@@ -61,13 +61,23 @@ graphQLType =
     Parser.oneOf
         [ Parser.keyword "String"
             |> Parser.map (\_ -> StringType)
-        , Parser.succeed (\key -> ObjectType (Dict.fromList [ ( key, StringType ) ]))
+        , Parser.succeed ObjectType
             |. Parser.spaces
             |. Parser.token "{"
             |. Parser.spaces
+            |= Parser.loop Dict.empty loopKeyVals
+        ]
+
+
+loopKeyVals : Dict String GraphQLType -> Parser (Step (Dict String GraphQLType) (Dict String GraphQLType))
+loopKeyVals keyVals =
+    Parser.oneOf
+        [ Parser.succeed (\key -> Loop (Dict.insert key StringType keyVals))
             |= alphas
             |. Parser.token ":"
             |. Parser.spaces
             |. alphas
             |. Parser.spaces
+        , Parser.succeed (\_ -> Done keyVals)
+            |= Parser.token "}"
         ]

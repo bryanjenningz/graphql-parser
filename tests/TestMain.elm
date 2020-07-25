@@ -2,7 +2,7 @@ module TestMain exposing (suite)
 
 import Dict
 import Expect
-import Main exposing (GraphQLType(..), Query(..), query, typedef)
+import Main exposing (Query(..), GraphQLType(..), query, typedef)
 import Parser
 import Test exposing (Test)
 
@@ -72,6 +72,22 @@ suite =
                                   , ObjectType
                                         (Dict.fromList
                                             [ ( "hero", StringType ) ]
+                                        )
+                                  )
+                                ]
+                        )
+            , Test.test "Parses a typedef with 2 key vals" <|
+                \_ ->
+                    Expect.equal
+                        (Parser.run typedef "type Hero { id: String name: String }")
+                        (Ok <|
+                            Dict.fromList
+                                [ ( "Hero"
+                                  , ObjectType
+                                        (Dict.fromList
+                                            [ ( "id", StringType )
+                                            , ( "name", StringType )
+                                            ]
                                         )
                                   )
                                 ]
